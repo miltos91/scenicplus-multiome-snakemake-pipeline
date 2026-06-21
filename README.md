@@ -1,4 +1,4 @@
-# SCENIC+ Multiome Pipeline — eRegulon Networks & Differential eRegulon Analysis
+# SCENIC+ Multiome Pipeline with eRegulon Networks & Differential eRegulon Analysis
 
 *End-to-end Snakemake pipeline that runs SCENIC+ on a Seurat v5 multiome object to infer TF–enhancer–gene eRegulons and differential eRegulon activity.*
 
