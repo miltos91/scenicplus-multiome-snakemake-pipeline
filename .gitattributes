@@ -1,2 +1,3 @@
 mallet/** linguist-vendored
-
+*.R linguist-language=R
+*.R linguist-detectable=true
