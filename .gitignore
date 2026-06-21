@@ -1,0 +1,12 @@
+# --- R ---
+.Rhistory
+.RData
+.Rproj.user/
+
+# --- Logs / runtime outputs ---
+*.log
+logs/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db

@@ -1,0 +1,118 @@
+# ============================================================
+# SCENICplus pipeline — master configuration
+# Edit all paths and parameters here before submitting.
+# ============================================================
+
+run_name: "name_of_run"
+
+# ── Conda environments ───────────────────────────────────────
+# NOTE: SCT assay must be present in the Seurat object.
+# NOTE: DAR analysis (Signac FindDAR) must be completed before running.
+conda_env_python: "scenicplus1a2"
+conda_env_r:      ""        # leave empty to use system/active R or set to env name if using a dedicated R conda env
+conda_sh:         "~/miniconda3/etc/profile.d/conda.sh"   # path to your conda install's profile.d/conda.sh. YOu can find via: echo $CONDA_EXE  (this PC uses miniconda3)
+
+# ── Seurat input ─────────────────────────────────────────────
+# A single Seurat object saved with saveRDS(seurat_obj, "seurat_obj.rds").
+seurat_rds: "/path_to_directory/input/seurat_obj.rds"
+
+# ── Metadata column ──────────────────────────────────────────
+# The main population column. How to categorize cells to examine the regulons and how to compare them later with FindMarkers (step 9). It is the name of the column that contains the categories of these cell types we wanna use as seperators
+# must match the names in dar_populations / identity_pairs.
+col_type_and_group:  "DiBella_and_Group" # use your own categorizing column
+
+# ── Output ───────────────────────────────────────────────────
+output_base: "/path_to_directory/output"
+
+# ── Compute ──────────────────────────────────────────────────
+n_cpu:           12
+use_slurm:       false       # true = submit to HPC via SLURM (sbatch), or false = run locally in your terminal (no sbatch)
+# The slurm_* settings below are only used when use_slurm: true. For a home run, set use_slurm: false and lower n_cpu / mallet_memory.
+slurm_partition: "highmem"
+slurm_mem:       "400G"
+slurm_time:      "24:00:00"
+slurm_mail:      "test@uni-test.de"
+
+# ── MALLET ───────────────────────────────────────────────────
+mallet_bin:    "/path_to_directory/pipeline/mallet/mallet-2.0.8/bin/mallet"
+mallet_memory: "2g"
+
+# ── cistarget DB ─────────────────────────────────────────────
+# ctx_db_base must contain: cbust, create_cisTarget_databases/, aertslab_motif_collection/
+# The Run 4A_one_time_setup.sh is getting run once to populate it (pipeline checks automatically).
+ctx_db_base:      "/path_to_directory/custom_db/ctx_db_mm10"
+genome_fa:        "/path_to_directory/ctx_db_mm10/genome/mm10.fa"
+chromsizes:       "/path_to_directory/ctx_db_mm10/genome/mm10.chrom.sizes"
+motif_annotations: "/path_to_directory/motif_annotations/motifs-v10-nr.mgi-m0.00001-o0.0.tbl"
+
+# ── Topic modelling ──────────────────────────────────────────
+n_topics: [50]
+n_iter:   100
+seed:     222
+
+# ── SCENIC+ ──────────────────────────────────────────────────
+species:      "mmusculus"
+biomart_host: "nov2020.archive.ensembl.org"
+is_multiome:  true
+nr_cells_per_metacells:     10
+search_space_upstream:      "1000 150000"
+search_space_downstream:    "1000 150000"
+search_space_extend_tss:    "10 10"
+
+# ── Motif enrichment ─────────────────────────────────────────
+annotation_version:                 "v10nr_clust"
+motif_similarity_fdr:               0.001
+orthologous_identity_threshold:     0.0
+annotations_to_use:                 "Direct_annot Orthology_annot"
+fraction_overlap_w_dem_database:    0.4
+dem_max_bg_regions:                 500
+dem_balance_number_of_promoters:    true
+dem_promoter_space:                 1000
+dem_adj_pval_thr:                   0.05
+dem_log2fc_thr:                     1.0
+dem_mean_fg_thr:                    0.0
+dem_motif_hit_thr:                  3.0
+fraction_overlap_w_ctx_database:    0.4
+ctx_auc_threshold:                  0.005
+ctx_nes_threshold:                  3.0
+ctx_rank_threshold:                 0.05
+
+# ── Inference ────────────────────────────────────────────────
+tf_to_gene_importance_method:       "GBM"
+region_to_gene_importance_method:   "GBM"
+region_to_gene_correlation_method:  "SR"
+order_regions_to_genes_by:          "importance"
+order_TFs_to_genes_by:              "importance"
+gsea_n_perm:                        1000
+quantile_thresholds_region_to_gene: "0.85 0.90 0.95"
+top_n_regionTogenes_per_gene:       "5 10 15"
+top_n_regionTogenes_per_region:     ""
+min_regions_per_gene:               0
+rho_threshold:                      0.05
+min_target_genes:                   10
+
+# ── DAR populations ──────────────────────────────────────────
+# These same names must appear as identities in col_type_and_group column.
+# dar_input_is_bed selects the input format in dar_input_dir:
+#   false → convert DARs_{name}.csv  →  {name}.bed   (Signac FindDAR CSV output)
+#   true  → use ready-made {name}.bed files as-is    (skip conversion)
+dar_input_dir:    "/path_to_directory/input/DARs_cell_type"
+dar_input_is_bed: true
+dar_populations: # use your own populations here from the selected categorizing column
+  - "CThPN_mutant"
+  - "CThPN_control"
+  - "Intermediate_progenitors_mutant"
+  - "Intermediate_progenitors_control"
+  - "Migrating_neurons_mutant"
+  - "Migrating_neurons_control"
+
+# ── FindMarkers ──────────────────────────────────────────────
+run_findmarkers: true
+identity_pairs:
+  - ["CThPN_mutant", "CThPN_control"]
+  - ["Intermediate_progenitors_mutant", "Intermediate_progenitors_control"]
+  - ["Migrating_neurons_mutant", "Migrating_neurons_control"]
+min_cells_per_ident:       10
+check_only_protein_coding: false
+protein_coding_genes_dir:  "/path/to/protein_coding_genes"
+species_r:                 "mouse"
